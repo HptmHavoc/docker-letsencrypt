@@ -1,5 +1,5 @@
 # nginx docker für rpi arm32v6
-FROM arm32v6/nginx:stable-alpine
+FROM arm32v6/nginx:1.14.2-alpine
 
 # set version label
 ARG BUILD_DATE
@@ -12,12 +12,22 @@ LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DA
 # environment settings
 ENV DHLEVEL=2048 ONLY_SUBDOMAINS=false AWS_CONFIG_FILE=/config/dns-conf/route53.ini
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2
+ENV PS1="$(whoami)@$(hostname):$(pwd)\\$ " \
+HOME="/root" \
+TERM="xterm"
 
 RUN \ 
  echo "**** install build packages ****" && \
  apk add --no-cache --virtual=build-dependencies \
 	curl \
     tar && \
+ echo "**** add scripts from baseimages ****" && \
+ #docker-baseimage-alpine
+ curl https://codeload.github.com/linuxserver/docker-baseimage-alpine/tar.gz/master | \
+  tar -xz --strip=2 docker-baseimage-alpine-master/root && \
+ #docker-baseimage-alpine-nginx
+ curl https://codeload.github.com/linuxserver/docker-baseimage-alpine-nginx/tar.gz/master | \
+  tar -xz --strip=2 docker-baseimage-alpine-nginx-master/root && \                  
  echo "**** add s6 overlay ****" && \
  curl -o \
  /tmp/s6-overlay.tar.gz -L \
